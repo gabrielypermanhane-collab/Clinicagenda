@@ -7,7 +7,7 @@
   --text-muted: #64748b;
   --border: #e2e8f0;
   --danger: #ef4444;
-  --success: #22c55e;
+  --success: #16a34a;
   --warning: #f59e0b;
 }
 
@@ -23,16 +23,146 @@ body {
   color: var(--text-dark);
 }
 
-.navbar {
-    * {
-  font-family: 'Poppins', sans-serif;
+.hidden {
+  display: none !important;
 }
+
+/* ================= TELA DE LOGIN ================= */
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  padding: 1rem;
+}
+
+.login-card {
+  background: var(--surface);
+  padding: 2.2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 430px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.logo-icon {
+  font-size: 2.8rem;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.login-header h2 {
+  font-size: 1.6rem;
+  color: var(--text-dark);
+}
+
+.login-header p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.login-user-types {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  gap: 4px;
+}
+
+.login-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.6rem 0.2rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.login-tab-btn.active {
+  background: #ffffff;
+  color: var(--primary);
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-block {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.8rem;
+}
+
+.login-hints {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--text-muted);
+}
+
+/* ================= PAINEL PRINCIPAL ================= */
+.navbar {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: #f1f5f9;
+  color: var(--text-dark);
+}
+
+.tab-btn.active {
+  background: #e0f2fe;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.btn-logout {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: 1rem;
+}
+
+.btn-logout:hover {
+  background: #fecaca;
 }
 
 .container {
@@ -51,6 +181,14 @@ body {
 .subtitle {
   color: var(--text-muted);
   font-size: 0.9rem;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
 }
 
 /* Botões */
@@ -100,6 +238,7 @@ body {
   display: flex;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .filter-group {
@@ -142,7 +281,7 @@ input, select, textarea {
   text-transform: uppercase;
 }
 
-/* Badges de Status */
+/* Badges de Status (FastAPI / MER) */
 .badge {
   padding: 0.25rem 0.6rem;
   border-radius: 9999px;
@@ -150,21 +289,27 @@ input, select, textarea {
   font-weight: 600;
 }
 
-.badge-agendado {
+.badge-agendada {
   background: #e0f2fe;
   color: #0369a1;
 }
 
-.badge-cancelado {
+.badge-realizada {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.badge-cancelada {
   background: #fee2e2;
   color: #991b1b;
 }
 
 /* Alertas */
 .alert {
-  padding: 1rem;
+  padding: 0.85rem;
   border-radius: 6px;
   margin-bottom: 1rem;
+  font-size: 0.95rem;
 }
 
 .alert-error {
@@ -190,16 +335,13 @@ input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.hidden {
-  display: none;
+  z-index: 999;
 }
 
 .modal-content {
   background: white;
   width: 100%;
-  max-width: 500px;
+  max-width: 520px;
   border-radius: 8px;
   padding: 1.5rem;
 }
@@ -240,40 +382,31 @@ input, select, textarea {
   gap: 0.5rem;
   margin-top: 1.5rem;
 }
-/* Navegação por Abas no Topo */
-.nav-tabs {
-  display: flex;
-  gap: 0.5rem;
+/* 1. Força a ocultação de qualquer elemento com a classe hidden */
+.hidden {
+  display: none !important;
 }
 
-.tab-btn {
-  background: transparent;
-  border: none;
-  padding: 0.6rem 1rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.tab-btn:hover {
-  background: #f1f5f9;
-  color: var(--text-dark);
-}
-
-.tab-btn.active {
-  background: #e0f2fe;
-  color: var(--primary);
-  font-weight: 600;
-}
-
-/* Controle de Exibição das Seções */
+/* 2. Garante que as abas fiquem escondidas por padrão */
 .tab-content {
   display: none;
 }
 
+/* 3. Exibe APENAS a aba que possui a classe active */
 .tab-content.active {
   display: block;
+}
+/* Ocultação global de perfis e modais */
+.hidden {
+  display: none !important;
+}
+
+/* Garante que NENHUMA aba apareça por padrão */
+section.tab-content {
+  display: none !important;
+}
+
+/* Mostra SOMENTE a aba que estiver com a classe active */
+section.tab-content.active {
+  display: block !important;
 }

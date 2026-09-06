@@ -3,125 +3,310 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clínica Saúde - Sistema de Agendamento</title>
+  <title>Saúde + - Sistema de Agendamento</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <header class="navbar">
-    <div class="logo">
-      <span class="icon">🩺</span>
-      <strong>Clínica Saúde</strong>
+  <!-- ================= TELA DE LOGIN (RF01, RF02, RNF01, RNF02) ================= -->
+  <section id="view-login" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <span class="logo-icon">🩺</span>
+        <h2>Saúde +</h2>
+        <p>Acesse com suas credenciais</p>
+      </div>
+
+      <div class="login-user-types">
+        <button type="button" class="login-tab-btn active" data-type="recepcao">Recepção</button>
+        <button type="button" class="login-tab-btn" data-type="profissional">Profissional</button>
+        <button type="button" class="login-tab-btn" data-type="paciente">Paciente</button>
+      </div>
+
+      <form id="form-login">
+        <input type="hidden" id="login-tipo-selecionado" value="recepcao">
+
+        <div class="form-group">
+          <label id="label-login-usuario" for="login-usuario">E-mail ou Usuário *</label>
+          <input type="text" id="login-usuario" required placeholder="admin@saude.com">
+        </div>
+
+        <div class="form-group">
+          <label for="login-senha">Senha *</label>
+          <input type="password" id="login-senha" required placeholder="••••••••">
+        </div>
+
+        <div id="login-alert" class="alert alert-error hidden"></div>
+
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      </form>
+
+      <div class="login-hints">
+        <small><strong>Credenciais para avaliação rápida:</strong></small>
+        <small>• <strong>Recepção:</strong> <code>admin@saude.com</code> / <code>123456</code></small>
+        <small>• <strong>Profissional:</strong> <code>dra.ana@saude.com</code> / <code>123456</code></small>
+        <small>• <strong>Paciente:</strong> <code>111.222.333-44</code> / <code>123456</code></small>
+      </div>
     </div>
-    <!-- Menu de Abas -->
-    <nav class="nav-tabs">
-      <button class="tab-btn active" data-tab="tab-agenda">📅 Agenda</button>
-      <button class="tab-btn" data-tab="tab-pacientes">👥 Pacientes</button>
-      <button class="tab-btn" data-tab="tab-profissionais">👨‍⚕️ Profissionais</button>
-    </nav>
-    <div class="user-info">
-      <span>Usuário: <strong>Recepcionista</strong></span>
+  </section>
+
+  <!-- ================= PAINEL PRINCIPAL (DASHBOARD) ================= -->
+  <div id="view-dashboard" class="hidden">
+    <header class="navbar">
+      <div class="logo">
+        <span class="icon">🩺</span>
+        <strong>Saúde +</strong>
+      </div>
+      
+      <!-- Navegação Recepção / Admin (RNF06) -->
+      <nav class="nav-tabs" id="nav-recepcao">
+        <button class="tab-btn active" data-tab="tab-agenda">📅 Agenda</button>
+        <button class="tab-btn" data-tab="tab-pacientes">👥 Pacientes</button>
+        <button class="tab-btn" data-tab="tab-profissionais">👨‍⚕️ Profissionais</button>
+        <button class="tab-btn" data-tab="tab-auditoria">🔔 Auditoria & Logs</button>
+      </nav>
+
+      <!-- Navegação Profissional de Saúde (RNF06) -->
+      <nav class="nav-tabs hidden" id="nav-profissional">
+        <button class="tab-btn active" data-tab="tab-prof-agenda">📋 Meus Atendimentos</button>
+        <button class="tab-btn" data-tab="tab-prof-folgas">🚫 Minhas Folgas</button>
+      </nav>
+
+      <div class="user-info">
+        <span id="user-display-label">Usuário: -</span>
+        <button id="btn-logout" class="btn-logout">Sair</button>
+      </div>
+    </header>
+
+    <div class="container">
+      <div id="alert-container" class="alert-container"></div>
+
+      <!-- ================= PERFIL: RECEPÇÃO ================= -->
+      <div id="perfil-view-recepcao">
+        <!-- Aba 1: Agenda Geral (RF08, RF09) -->
+        <section id="tab-agenda" class="tab-content active">
+          <div class="action-bar">
+            <div>
+              <h2>Agenda de Consultas</h2>
+              <p class="subtitle">Horário de funcionamento: 09:00 às 18:00 (Segunda a Sexta)</p>
+            </div>
+            <button id="btn-open-modal-agendamento" class="btn btn-primary">+ Novo Agendamento</button>
+          </div>
+
+          <div class="filters-card">
+            <div class="filter-group">
+              <label for="filtro-data">Data:</label>
+              <input type="date" id="filtro-data">
+            </div>
+            <div class="filter-group">
+              <label for="filtro-profissional">Profissional:</label>
+              <select id="filtro-profissional">
+                <option value="">Todos os profissionais</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filtro-status">Status (RF09, RF10):</label>
+              <select id="filtro-status">
+                <option value="">Todos os status</option>
+                <option value="AGENDADA">AGENDADA</option>
+                <option value="REALIZADA">REALIZADA</option>
+                <option value="CANCELADA">CANCELADA</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Horário</th>
+                  <th>Paciente</th>
+                  <th>Profissional</th>
+                  <th>Especialidade</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="agenda-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Aba 2: Pacientes (RF03, RF14) -->
+        <section id="tab-pacientes" class="tab-content">
+          <div class="action-bar">
+            <div>
+              <h2>Gestão de Pacientes</h2>
+              <p class="subtitle">Conformidade com a LGPD e dados sensíveis</p>
+            </div>
+            <button id="btn-open-modal-paciente" class="btn btn-primary">+ Cadastrar Paciente</button>
+          </div>
+
+          <div class="filters-card">
+            <div class="filter-group" style="flex: 1;">
+              <label for="busca-paciente">Pesquisar Paciente (Nome ou CPF - RF14):</label>
+              <input type="text" id="busca-paciente" placeholder="Digite para filtrar por nome ou CPF...">
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Nome Completo</th>
+                  <th>CPF</th>
+                  <th>Telefone</th>
+                  <th>E-mail</th>
+                  <th>Nascimento</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="pacientes-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Aba 3: Profissionais (RF04, RF15) -->
+        <section id="tab-profissionais" class="tab-content">
+          <div class="action-bar">
+            <div>
+              <h2>Corpo Clínico</h2>
+              <p class="subtitle">Especialistas e registros cadastrados</p>
+            </div>
+            <button id="btn-open-modal-profissional" class="btn btn-primary">+ Cadastrar Profissional</button>
+          </div>
+
+          <div class="filters-card">
+            <div class="filter-group" style="flex: 1;">
+              <label for="busca-profissional">Pesquisar Profissional (Nome ou Especialidade - RF15):</label>
+              <input type="text" id="busca-profissional" placeholder="Digite para buscar por nome ou área...">
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Registro Profissional</th>
+                  <th>Especialidade</th>
+                  <th>Telefone</th>
+                  <th>E-mail</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="profissionais-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Aba 4: Auditoria e Logs (RF13, RNF07) -->
+        <section id="tab-auditoria" class="tab-content">
+          <div class="action-bar">
+            <div>
+              <h2>Trilha de Auditoria & Notificações Simuladas</h2>
+              <p class="subtitle">Rastreabilidade e disparos simulados de e-mail</p>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Consulta Ref.</th>
+                  <th>Tipo Evento</th>
+                  <th>Mensagem / Detalhes</th>
+                  <th>Status Envio</th>
+                </tr>
+              </thead>
+              <tbody id="auditoria-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= PERFIL: PACIENTE ================= -->
+      <div id="perfil-view-paciente" class="hidden">
+        <section class="tab-content active">
+          <div class="action-bar">
+            <div>
+              <h2>Minhas Consultas e Histórico Clínico</h2>
+              <p class="subtitle">Acompanhe seus horários e orientações médicas recebidas</p>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Horário</th>
+                  <th>Profissional</th>
+                  <th>Status</th>
+                  <th>Conduta / Prescrição Médica</th>
+                </tr>
+              </thead>
+              <tbody id="paciente-consultas-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- ================= PERFIL: PROFISSIONAL DE SAÚDE ================= -->
+      <div id="perfil-view-profissional" class="hidden">
+        <!-- Aba 1: Meus Atendimentos (RF11, RF12) -->
+        <section id="tab-prof-agenda" class="tab-content active">
+          <div class="action-bar">
+            <div>
+              <h2>Minha Agenda de Atendimentos</h2>
+              <p class="subtitle">Realize atendimentos e registre anotações clínicas</p>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Horário</th>
+                  <th>Paciente</th>
+                  <th>Status</th>
+                  <th>Prontuário / Ação</th>
+                </tr>
+              </thead>
+              <tbody id="prof-consultas-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Aba 2: Folgas e Indisponibilidades -->
+        <section id="tab-prof-folgas" class="tab-content">
+          <div class="action-bar">
+            <div>
+              <h2>Minhas Folgas / Bloqueio de Agenda</h2>
+              <p class="subtitle">Datas bloqueadas para novas marcações pela recepção</p>
+            </div>
+            <button id="btn-open-modal-folga" class="btn btn-primary">+ Adicionar Folga</button>
+          </div>
+          <div class="table-container">
+            <table class="schedule-table">
+              <thead>
+                <tr>
+                  <th>Data Bloqueada</th>
+                  <th>Motivo</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="prof-folgas-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
     </div>
-  </header>
-
-  <div class="container">
-    <div id="alert-container" class="alert-container"></div>
-
-    <!-- ================= ABA 1: AGENDA ================= -->
-    <section id="tab-agenda" class="tab-content active">
-      <div class="action-bar">
-        <div>
-          <h2>Agenda de Consultas</h2>
-          <p class="subtitle">Visualização e agendamento de atendimentos</p>
-        </div>
-        <button id="btn-open-modal-agendamento" class="btn btn-primary">+ Novo Agendamento</button>
-      </div>
-
-      <div class="filters-card">
-        <div class="filter-group">
-          <label for="filtro-data">Data:</label>
-          <input type="date" id="filtro-data">
-        </div>
-        <div class="filter-group">
-          <label for="filtro-profissional">Filtrar por Profissional:</label>
-          <select id="filtro-profissional">
-            <option value="">Todos os profissionais</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="table-container">
-        <table class="schedule-table">
-          <thead>
-            <tr>
-              <th>Horário</th>
-              <th>Paciente</th>
-              <th>Profissional</th>
-              <th>Especialidade</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="agenda-body"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ================= ABA 2: PACIENTES ================= -->
-    <section id="tab-pacientes" class="tab-content">
-      <div class="action-bar">
-        <div>
-          <h2>Pacientes Cadastrados</h2>
-          <p class="subtitle">Gerenciamento de prontuário e dados pessoais (LGPD)</p>
-        </div>
-        <button id="btn-open-modal-paciente" class="btn btn-primary">+ Cadastrar Paciente</button>
-      </div>
-
-      <div class="table-container">
-        <table class="schedule-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>CPF</th>
-              <th>Telefone</th>
-              <th>E-mail</th>
-              <th>Nascimento</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="pacientes-body"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ================= ABA 3: PROFISSIONAIS ================= -->
-    <section id="tab-profissionais" class="tab-content">
-      <div class="action-bar">
-        <div>
-          <h2>Corpo Clínico</h2>
-          <p class="subtitle">Especialistas e horários da clínica</p>
-        </div>
-        <button id="btn-open-modal-profissional" class="btn btn-primary">+ Cadastrar Profissional</button>
-      </div>
-
-      <div class="table-container">
-        <table class="schedule-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Especialidade</th>
-              <th>Telefone</th>
-              <th>E-mail</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody id="profissionais-body"></tbody>
-        </table>
-      </div>
-    </section>
   </div>
 
-  <!-- ================= MODAL: NOVO AGENDAMENTO ================= -->
+  <!-- ================= MODAIS DO SISTEMA ================= -->
+
+  <!-- Modal: Agendamento (RF05, RN01, RN02) -->
   <div id="modal-agendamento" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -143,16 +328,16 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="campo-data">Data *</label>
+            <label for="campo-data">Data (Seg à Sex) *</label>
             <input type="date" id="campo-data" required>
           </div>
           <div class="form-group">
-            <label for="campo-hora-inicio">Início *</label>
-            <input type="time" id="campo-hora-inicio" required>
+            <label for="campo-hora-inicio">Início (09:00 - 18:00) *</label>
+            <input type="time" id="campo-hora-inicio" required min="09:00" max="18:00">
           </div>
           <div class="form-group">
-            <label for="campo-hora-fim">Fim *</label>
-            <input type="time" id="campo-hora-fim" required>
+            <label for="campo-hora-fim">Término *</label>
+            <input type="time" id="campo-hora-fim" required min="09:00" max="18:00">
           </div>
         </div>
         <div class="modal-footer">
@@ -163,7 +348,56 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: NOVO PACIENTE ================= -->
+  <!-- Modal: Cancelamento com Justificativa (RF07) -->
+  <div id="modal-cancelamento" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Cancelar Agendamento</h3>
+        <button class="btn-close" onclick="fecharModal('modal-cancelamento')">&times;</button>
+      </div>
+      <form id="form-cancelamento">
+        <input type="hidden" id="cancelar-consulta-id">
+        <div class="form-group">
+          <label for="cancelar-motivo">Motivo do Cancelamento * (RF07)</label>
+          <textarea id="cancelar-motivo" rows="3" required placeholder="Informe a justificativa do cancelamento..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-cancelamento')">Voltar</button>
+          <button type="submit" class="btn btn-danger-sm" style="padding: 0.6rem 1rem;">Confirmar Cancelamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Registrar Atendimento / Prontuário (RF11, RN03) -->
+  <div id="modal-atendimento" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Registro de Atendimento Clínico (Prontuário)</h3>
+        <button class="btn-close" onclick="fecharModal('modal-atendimento')">&times;</button>
+      </div>
+      <form id="form-atendimento">
+        <input type="hidden" id="atendimento-consulta-id">
+        <div class="form-group">
+          <label><strong>Paciente:</strong> <span id="atendimento-paciente-nome">-</span></label>
+        </div>
+        <div class="form-group">
+          <label for="atendimento-anotacoes">Anotações Clínicas (Diagnóstico / Queixa) *</label>
+          <textarea id="atendimento-anotacoes" rows="3" required placeholder="Descreva queixas, histórico e sintomas observados..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="atendimento-conduta">Prescrição ou Conduta Médica</label>
+          <textarea id="atendimento-conduta" rows="2" placeholder="Prescrição de medicamentos, repouso, exames ou retorno..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-atendimento')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar e Concluir Atendimento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Novo Paciente (RF03, RN04) -->
   <div id="modal-paciente" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -173,11 +407,11 @@
       <form id="form-paciente">
         <div class="form-group">
           <label for="pac-nome">Nome Completo *</label>
-          <input type="text" id="pac-nome" required placeholder="Ex: Lucas Ferreira">
+          <input type="text" id="pac-nome" required placeholder="Ex: Carlos Eduardo Silva">
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="pac-cpf">CPF *</label>
+            <label for="pac-cpf">CPF (Único - RN04) *</label>
             <input type="text" id="pac-cpf" required placeholder="000.000.000-00">
           </div>
           <div class="form-group">
@@ -191,7 +425,7 @@
             <input type="text" id="pac-tel" required placeholder="(28) 99999-0000">
           </div>
           <div class="form-group">
-            <label for="pac-email">E-mail *</label>
+            <label for="pac-email">E-mail de Contato *</label>
             <input type="email" id="pac-email" required placeholder="paciente@email.com">
           </div>
         </div>
@@ -203,27 +437,27 @@
     </div>
   </div>
 
-  <!-- ================= MODAL: NOVO PROFISSIONAL ================= -->
+  <!-- Modal: Novo Profissional (RF04, RN05) -->
   <div id="modal-profissional" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Cadastrar Profissional</h3>
+        <h3>Cadastrar Profissional de Saúde</h3>
         <button class="btn-close" onclick="fecharModal('modal-profissional')">&times;</button>
       </div>
       <form id="form-profissional">
         <div class="form-group">
           <label for="prof-nome">Nome Completo *</label>
-          <input type="text" id="prof-nome" required placeholder="Ex: Dr. Felipe Ramos">
+          <input type="text" id="prof-nome" required placeholder="Ex: Dra. Ana Beatriz">
         </div>
-        <div class="form-group">
-          <label for="prof-esp">Especialidade *</label>
-          <select id="prof-esp" required>
-            <option value="">Selecione uma especialidade</option>
-            <option value="Fisioterapia">Fisioterapia</option>
-            <option value="Odontologia">Odontologia</option>
-            <option value="Psicologia">Psicologia</option>
-            <option value="Clínica Geral">Clínica Geral</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prof-registro">Registro Profissional (Único - RN05) *</label>
+            <input type="text" id="prof-registro" required placeholder="Ex: CREFITO 12345, CRO 9876">
+          </div>
+          <div class="form-group">
+            <label for="prof-esp">Especialidade *</label>
+            <input type="text" id="prof-esp" required placeholder="Ex: Fisioterapia, Odontologia...">
+          </div>
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -231,13 +465,37 @@
             <input type="text" id="prof-tel" required placeholder="(28) 98888-1111">
           </div>
           <div class="form-group">
-            <label for="prof-email">E-mail *</label>
-            <input type="email" id="prof-email" required placeholder="doutor@clinica.com">
+            <label for="prof-email">E-mail Profissional *</label>
+            <input type="email" id="prof-email" required placeholder="dra.ana@saude.com">
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-profissional')">Cancelar</button>
           <button type="submit" class="btn btn-primary">Salvar Profissional</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Indisponibilidade Médica / Folga -->
+  <div id="modal-folga" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Bloquear Dia / Registrar Folga</h3>
+        <button class="btn-close" onclick="fecharModal('modal-folga')">&times;</button>
+      </div>
+      <form id="form-folga">
+        <div class="form-group">
+          <label for="folga-data">Data de Bloqueio *</label>
+          <input type="date" id="folga-data" required>
+        </div>
+        <div class="form-group">
+          <label for="folga-motivo">Motivo do Bloqueio</label>
+          <input type="text" id="folga-motivo" placeholder="Ex: Congresso, Férias, Folga programada">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-folga')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Confirmar Bloqueio</button>
         </div>
       </form>
     </div>
