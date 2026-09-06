@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clínica Saúde - Sistema de Agendamento</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="logo">
+      <span class="icon">🩺</span>
+      <strong>Clínica Saúde</strong>
+    </div>
+    <!-- Menu de Abas -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" data-tab="tab-agenda">📅 Agenda</button>
+      <button class="tab-btn" data-tab="tab-pacientes">👥 Pacientes</button>
+      <button class="tab-btn" data-tab="tab-profissionais">👨‍⚕️ Profissionais</button>
+    </nav>
+    <div class="user-info">
+      <span>Usuário: <strong>Recepcionista</strong></span>
+    </div>
+  </header>
+
+  <div class="container">
+    <div id="alert-container" class="alert-container"></div>
+
+    <!-- ================= ABA 1: AGENDA ================= -->
+    <section id="tab-agenda" class="tab-content active">
+      <div class="action-bar">
+        <div>
+          <h2>Agenda de Consultas</h2>
+          <p class="subtitle">Visualização e agendamento de atendimentos</p>
+        </div>
+        <button id="btn-open-modal-agendamento" class="btn btn-primary">+ Novo Agendamento</button>
+      </div>
+
+      <div class="filters-card">
+        <div class="filter-group">
+          <label for="filtro-data">Data:</label>
+          <input type="date" id="filtro-data">
+        </div>
+        <div class="filter-group">
+          <label for="filtro-profissional">Filtrar por Profissional:</label>
+          <select id="filtro-profissional">
+            <option value="">Todos os profissionais</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Horário</th>
+              <th>Paciente</th>
+              <th>Profissional</th>
+              <th>Especialidade</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="agenda-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= ABA 2: PACIENTES ================= -->
+    <section id="tab-pacientes" class="tab-content">
+      <div class="action-bar">
+        <div>
+          <h2>Pacientes Cadastrados</h2>
+          <p class="subtitle">Gerenciamento de prontuário e dados pessoais (LGPD)</p>
+        </div>
+        <button id="btn-open-modal-paciente" class="btn btn-primary">+ Cadastrar Paciente</button>
+      </div>
+
+      <div class="table-container">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>CPF</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+              <th>Nascimento</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="pacientes-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= ABA 3: PROFISSIONAIS ================= -->
+    <section id="tab-profissionais" class="tab-content">
+      <div class="action-bar">
+        <div>
+          <h2>Corpo Clínico</h2>
+          <p class="subtitle">Especialistas e horários da clínica</p>
+        </div>
+        <button id="btn-open-modal-profissional" class="btn btn-primary">+ Cadastrar Profissional</button>
+      </div>
+
+      <div class="table-container">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Especialidade</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="profissionais-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= MODAL: NOVO AGENDAMENTO ================= -->
+  <div id="modal-agendamento" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Agendar Consulta</h3>
+        <button class="btn-close" onclick="fecharModal('modal-agendamento')">&times;</button>
+      </div>
+      <form id="form-agendamento">
+        <div class="form-group">
+          <label for="campo-paciente">Paciente *</label>
+          <select id="campo-paciente" required>
+            <option value="">Selecione um paciente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="campo-profissional">Profissional *</label>
+          <select id="campo-profissional" required>
+            <option value="">Selecione um profissional</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="campo-data">Data *</label>
+            <input type="date" id="campo-data" required>
+          </div>
+          <div class="form-group">
+            <label for="campo-hora-inicio">Início *</label>
+            <input type="time" id="campo-hora-inicio" required>
+          </div>
+          <div class="form-group">
+            <label for="campo-hora-fim">Fim *</label>
+            <input type="time" id="campo-hora-fim" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-agendamento')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Confirmar Agendamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NOVO PACIENTE ================= -->
+  <div id="modal-paciente" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Cadastrar Paciente</h3>
+        <button class="btn-close" onclick="fecharModal('modal-paciente')">&times;</button>
+      </div>
+      <form id="form-paciente">
+        <div class="form-group">
+          <label for="pac-nome">Nome Completo *</label>
+          <input type="text" id="pac-nome" required placeholder="Ex: Lucas Ferreira">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pac-cpf">CPF *</label>
+            <input type="text" id="pac-cpf" required placeholder="000.000.000-00">
+          </div>
+          <div class="form-group">
+            <label for="pac-nasc">Data Nasc. *</label>
+            <input type="date" id="pac-nasc" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="pac-tel">Telefone *</label>
+            <input type="text" id="pac-tel" required placeholder="(28) 99999-0000">
+          </div>
+          <div class="form-group">
+            <label for="pac-email">E-mail *</label>
+            <input type="email" id="pac-email" required placeholder="paciente@email.com">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-paciente')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Paciente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= MODAL: NOVO PROFISSIONAL ================= -->
+  <div id="modal-profissional" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Cadastrar Profissional</h3>
+        <button class="btn-close" onclick="fecharModal('modal-profissional')">&times;</button>
+      </div>
+      <form id="form-profissional">
+        <div class="form-group">
+          <label for="prof-nome">Nome Completo *</label>
+          <input type="text" id="prof-nome" required placeholder="Ex: Dr. Felipe Ramos">
+        </div>
+        <div class="form-group">
+          <label for="prof-esp">Especialidade *</label>
+          <select id="prof-esp" required>
+            <option value="">Selecione uma especialidade</option>
+            <option value="Fisioterapia">Fisioterapia</option>
+            <option value="Odontologia">Odontologia</option>
+            <option value="Psicologia">Psicologia</option>
+            <option value="Clínica Geral">Clínica Geral</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prof-tel">Telefone *</label>
+            <input type="text" id="prof-tel" required placeholder="(28) 98888-1111">
+          </div>
+          <div class="form-group">
+            <label for="prof-email">E-mail *</label>
+            <input type="email" id="prof-email" required placeholder="doutor@clinica.com">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-profissional')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Profissional</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
