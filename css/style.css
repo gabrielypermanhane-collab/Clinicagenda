@@ -27,7 +27,6 @@ body {
   display: none !important;
 }
 
-/* ================= TELA DE LOGIN ================= */
 .login-wrapper {
   display: flex;
   justify-content: center;
@@ -112,7 +111,6 @@ body {
   color: var(--text-muted);
 }
 
-/* ================= PAINEL PRINCIPAL ================= */
 .navbar {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -191,7 +189,6 @@ body {
   display: block;
 }
 
-/* Botões */
 .btn {
   padding: 0.6rem 1.2rem;
   border-radius: 6px;
@@ -229,7 +226,6 @@ body {
   color: white;
 }
 
-/* Filtros */
 .filters-card {
   background: var(--surface);
   padding: 1rem;
@@ -254,7 +250,6 @@ input, select, textarea {
   font-size: 0.95rem;
 }
 
-/* Tabela */
 .table-container {
   background: var(--surface);
   border-radius: 8px;
@@ -281,7 +276,6 @@ input, select, textarea {
   text-transform: uppercase;
 }
 
-/* Badges de Status (FastAPI / MER) */
 .badge {
   padding: 0.25rem 0.6rem;
   border-radius: 9999px;
@@ -304,7 +298,6 @@ input, select, textarea {
   color: #991b1b;
 }
 
-/* Alertas */
 .alert {
   padding: 0.85rem;
   border-radius: 6px;
@@ -324,7 +317,6 @@ input, select, textarea {
   color: #166534;
 }
 
-/* Modal */
 .modal {
   position: fixed;
   top: 0;
@@ -382,31 +374,28 @@ input, select, textarea {
   gap: 0.5rem;
   margin-top: 1.5rem;
 }
-/* 1. Força a ocultação de qualquer elemento com a classe hidden */
+
 .hidden {
   display: none !important;
 }
 
-/* 2. Garante que as abas fiquem escondidas por padrão */
 .tab-content {
   display: none;
 }
 
-/* 3. Exibe APENAS a aba que possui a classe active */
 .tab-content.active {
   display: block;
 }
-/* Ocultação global de perfis e modais */
+
 .hidden {
   display: none !important;
 }
 
-/* Garante que NENHUMA aba apareça por padrão */
 section.tab-content {
   display: none !important;
 }
 
-/* Mostra SOMENTE a aba que estiver com a classe active */
 section.tab-content.active {
   display: block !important;
 }
+.badge-confirmada, .badge-em_atendimento, .badge-faltou { padding: 0.25rem 0.55rem; border-radius: 999px; font-weight: 600; font-size: 0.78rem; }

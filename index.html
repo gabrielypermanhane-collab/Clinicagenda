@@ -8,7 +8,6 @@
 </head>
 <body>
 
-  <!-- ================= TELA DE LOGIN (RF01, RF02, RNF01, RNF02) ================= -->
   <section id="view-login" class="login-wrapper">
     <div class="login-card">
       <div class="login-header">
@@ -50,15 +49,13 @@
     </div>
   </section>
 
-  <!-- ================= PAINEL PRINCIPAL (DASHBOARD) ================= -->
   <div id="view-dashboard" class="hidden">
     <header class="navbar">
       <div class="logo">
         <span class="icon">🩺</span>
         <strong>Saúde +</strong>
       </div>
-      
-      <!-- Navegação Recepção / Admin (RNF06) -->
+
       <nav class="nav-tabs" id="nav-recepcao">
         <button class="tab-btn active" data-tab="tab-agenda">📅 Agenda</button>
         <button class="tab-btn" data-tab="tab-pacientes">👥 Pacientes</button>
@@ -66,7 +63,6 @@
         <button class="tab-btn" data-tab="tab-auditoria">🔔 Auditoria & Logs</button>
       </nav>
 
-      <!-- Navegação Profissional de Saúde (RNF06) -->
       <nav class="nav-tabs hidden" id="nav-profissional">
         <button class="tab-btn active" data-tab="tab-prof-agenda">📋 Meus Atendimentos</button>
         <button class="tab-btn" data-tab="tab-prof-folgas">🚫 Minhas Folgas</button>
@@ -81,9 +77,8 @@
     <div class="container">
       <div id="alert-container" class="alert-container"></div>
 
-      <!-- ================= PERFIL: RECEPÇÃO ================= -->
       <div id="perfil-view-recepcao">
-        <!-- Aba 1: Agenda Geral (RF08, RF09) -->
+        
         <section id="tab-agenda" class="tab-content active">
           <div class="action-bar">
             <div>
@@ -95,7 +90,14 @@
 
           <div class="filters-card">
             <div class="filter-group">
-              <label for="filtro-data">Data:</label>
+              <label for="visualizacao-agenda">Visualização:</label>
+              <select id="visualizacao-agenda">
+                <option value="dia">Dia</option>
+                <option value="semana">Semana</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filtro-data">Data de referência:</label>
               <input type="date" id="filtro-data">
             </div>
             <div class="filter-group">
@@ -109,8 +111,11 @@
               <select id="filtro-status">
                 <option value="">Todos os status</option>
                 <option value="AGENDADA">AGENDADA</option>
-                <option value="REALIZADA">REALIZADA</option>
+                <option value="CONFIRMADA">CONFIRMADA</option>
+                <option value="EM_ATENDIMENTO">EM ATENDIMENTO</option>
+                <option value="REALIZADA">CONCLUÍDA</option>
                 <option value="CANCELADA">CANCELADA</option>
+                <option value="FALTOU">FALTOU</option>
               </select>
             </div>
           </div>
@@ -119,6 +124,7 @@
             <table class="schedule-table">
               <thead>
                 <tr>
+                  <th>Data</th>
                   <th>Horário</th>
                   <th>Paciente</th>
                   <th>Profissional</th>
@@ -132,7 +138,6 @@
           </div>
         </section>
 
-        <!-- Aba 2: Pacientes (RF03, RF14) -->
         <section id="tab-pacientes" class="tab-content">
           <div class="action-bar">
             <div>
@@ -166,7 +171,6 @@
           </div>
         </section>
 
-        <!-- Aba 3: Profissionais (RF04, RF15) -->
         <section id="tab-profissionais" class="tab-content">
           <div class="action-bar">
             <div>
@@ -200,7 +204,6 @@
           </div>
         </section>
 
-        <!-- Aba 4: Auditoria e Logs (RF13, RNF07) -->
         <section id="tab-auditoria" class="tab-content">
           <div class="action-bar">
             <div>
@@ -225,7 +228,6 @@
         </section>
       </div>
 
-      <!-- ================= PERFIL: PACIENTE ================= -->
       <div id="perfil-view-paciente" class="hidden">
         <section class="tab-content active">
           <div class="action-bar">
@@ -251,9 +253,8 @@
         </section>
       </div>
 
-      <!-- ================= PERFIL: PROFISSIONAL DE SAÚDE ================= -->
       <div id="perfil-view-profissional" class="hidden">
-        <!-- Aba 1: Meus Atendimentos (RF11, RF12) -->
+        
         <section id="tab-prof-agenda" class="tab-content active">
           <div class="action-bar">
             <div>
@@ -277,7 +278,6 @@
           </div>
         </section>
 
-        <!-- Aba 2: Folgas e Indisponibilidades -->
         <section id="tab-prof-folgas" class="tab-content">
           <div class="action-bar">
             <div>
@@ -304,9 +304,7 @@
     </div>
   </div>
 
-  <!-- ================= MODAIS DO SISTEMA ================= -->
-
-  <!-- Modal: Agendamento (RF05, RN01, RN02) -->
+  
   <div id="modal-agendamento" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -348,7 +346,49 @@
     </div>
   </div>
 
-  <!-- Modal: Cancelamento com Justificativa (RF07) -->
+
+  <div id="modal-reagendamento" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Reagendar Consulta</h3>
+        <button class="btn-close" onclick="fecharModal('modal-reagendamento')">&times;</button>
+      </div>
+      <form id="form-reagendamento">
+        <input type="hidden" id="reagendar-consulta-id">
+        <div class="form-group">
+          <label for="reagendar-paciente">Paciente *</label>
+          <select id="reagendar-paciente" required>
+            <option value="">Selecione um paciente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="reagendar-profissional">Profissional *</label>
+          <select id="reagendar-profissional" required>
+            <option value="">Selecione um profissional</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="reagendar-data">Nova Data *</label>
+            <input type="date" id="reagendar-data" required>
+          </div>
+          <div class="form-group">
+            <label for="reagendar-hora-inicio">Novo Início *</label>
+            <input type="time" id="reagendar-hora-inicio" required min="09:00" max="18:00">
+          </div>
+          <div class="form-group">
+            <label for="reagendar-hora-fim">Novo Término *</label>
+            <input type="time" id="reagendar-hora-fim" required min="09:00" max="18:00">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-reagendamento')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Reagendamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div id="modal-cancelamento" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -369,7 +409,6 @@
     </div>
   </div>
 
-  <!-- Modal: Registrar Atendimento / Prontuário (RF11, RN03) -->
   <div id="modal-atendimento" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -397,14 +436,14 @@
     </div>
   </div>
 
-  <!-- Modal: Novo Paciente (RF03, RN04) -->
   <div id="modal-paciente" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Cadastrar Paciente</h3>
+        <h3 id="titulo-modal-paciente">Cadastrar Paciente</h3>
         <button class="btn-close" onclick="fecharModal('modal-paciente')">&times;</button>
       </div>
       <form id="form-paciente">
+        <input type="hidden" id="pac-id">
         <div class="form-group">
           <label for="pac-nome">Nome Completo *</label>
           <input type="text" id="pac-nome" required placeholder="Ex: Carlos Eduardo Silva">
@@ -431,20 +470,20 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-paciente')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Paciente</button>
+          <button type="submit" class="btn btn-primary" id="btn-salvar-paciente">Salvar Paciente</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Novo Profissional (RF04, RN05) -->
   <div id="modal-profissional" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Cadastrar Profissional de Saúde</h3>
+        <h3 id="titulo-modal-profissional">Cadastrar Profissional de Saúde</h3>
         <button class="btn-close" onclick="fecharModal('modal-profissional')">&times;</button>
       </div>
       <form id="form-profissional">
+        <input type="hidden" id="prof-id">
         <div class="form-group">
           <label for="prof-nome">Nome Completo *</label>
           <input type="text" id="prof-nome" required placeholder="Ex: Dra. Ana Beatriz">
@@ -471,13 +510,12 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="fecharModal('modal-profissional')">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Profissional</button>
+          <button type="submit" class="btn btn-primary" id="btn-salvar-profissional">Salvar Profissional</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Modal: Indisponibilidade Médica / Folga -->
   <div id="modal-folga" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">

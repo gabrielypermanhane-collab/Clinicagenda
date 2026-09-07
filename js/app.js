@@ -1,42 +1,34 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  let usuarioLogado = JSON.parse(sessionStorage.getItem('sessao_usuario')) || null;
+  let usuario = JSON.parse(sessionStorage.getItem('sessao_usuario')) || null;
 
-  // Telas e Contêineres
-  const viewLogin = document.getElementById('view-login');
-  const viewDashboard = document.getElementById('view-dashboard');
-  const userDisplayLabel = document.getElementById('user-display-label');
-  const btnLogout = document.getElementById('btn-logout');
+  const telaLogin = document.getElementById('view-login');
+  const painel = document.getElementById('view-dashboard');
+  const nomeUsuario = document.getElementById('user-display-label');
+  const botaoSair = document.getElementById('btn-logout');
 
-  // Perfis
-  const perfilRecepcao = document.getElementById('perfil-view-recepcao');
-  const perfilPaciente = document.getElementById('perfil-view-paciente');
-  const perfilProfissional = document.getElementById('perfil-view-profissional');
-  const navRecepcao = document.getElementById('nav-recepcao');
-  const navProfissional = document.getElementById('nav-profissional');
+  const areaRecepcao = document.getElementById('perfil-view-recepcao');
+  const areaPaciente = document.getElementById('perfil-view-paciente');
+  const areaProfissional = document.getElementById('perfil-view-profissional');
+  const menuRecepcao = document.getElementById('nav-recepcao');
+  const menuProfissional = document.getElementById('nav-profissional');
 
-  // Navegação de Abas
-  // Navegação de Abas Corrigida
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const targetId = btn.dataset.tab;
       if (!targetId) return;
 
-      // 1. Desativa todos os botões de abas do mesmo menu
       const nav = btn.closest('.nav-tabs');
       if (nav) {
         nav.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       }
       btn.classList.add('active');
 
-      // 2. Localiza o contêiner do perfil atual (recepção ou profissional)
       const containerPerfil = btn.closest('#view-dashboard');
       if (containerPerfil) {
-        // Oculta todas as abas
         containerPerfil.querySelectorAll('.tab-content').forEach(c => {
           c.classList.remove('active');
         });
         
-        // Exibe apenas a aba clicada
         const targetTab = document.getElementById(targetId);
         if (targetTab) {
           targetTab.classList.add('active');
@@ -45,7 +37,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Utilitários de Modal Globais
   window.fecharModal = (id) => {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
@@ -55,57 +46,74 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (el) el.classList.remove('hidden');
   };
 
-  // Associação defensiva dos botões de abrir modal
-  const btnAgend = document.getElementById('btn-open-modal-agendamento');
-  if (btnAgend) btnAgend.onclick = () => abrirModal('modal-agendamento');
+  const botaoAgendar = document.getElementById('btn-open-modal-agendamento');
+  if (botaoAgendar) botaoAgendar.onclick = () => abrirModal('modal-agendamento');
 
-  const btnPac = document.getElementById('btn-open-modal-paciente');
-  if (btnPac) btnPac.onclick = () => abrirModal('modal-paciente');
+  const botaoPaciente = document.getElementById('btn-open-modal-paciente');
+  if (botaoPaciente) botaoPaciente.onclick = () => {
+    document.getElementById('form-paciente')?.reset();
+    document.getElementById('pac-id').value = '';
+    document.getElementById('titulo-modal-paciente').textContent = 'Cadastrar Paciente';
+    document.getElementById('btn-salvar-paciente').textContent = 'Salvar Paciente';
+    abrirModal('modal-paciente');
+  };
 
-  const btnProf = document.getElementById('btn-open-modal-profissional');
-  if (btnProf) btnProf.onclick = () => abrirModal('modal-profissional');
+  const botaoProfissional = document.getElementById('btn-open-modal-profissional');
+  if (botaoProfissional) botaoProfissional.onclick = () => {
+    document.getElementById('form-profissional')?.reset();
+    document.getElementById('prof-id').value = '';
+    document.getElementById('titulo-modal-profissional').textContent = 'Cadastrar Profissional de Saúde';
+    document.getElementById('btn-salvar-profissional').textContent = 'Salvar Profissional';
+    abrirModal('modal-profissional');
+  };
 
-  const btnFolga = document.getElementById('btn-open-modal-folga') || document.getElementById('btn-open-modal-indisp');
-  if (btnFolga) btnFolga.onclick = () => abrirModal('modal-folga');
+  const botaoFolga = document.getElementById('btn-open-modal-folga') || document.getElementById('btn-open-modal-indisp');
+  if (botaoFolga) botaoFolga.onclick = () => abrirModal('modal-folga');
 
-  const alertContainer = document.getElementById('alert-container');
+  const alertas = document.getElementById('alert-container');
   function mostrarAlerta(msg, tipo = 'error') {
-    if (!alertContainer) return;
-    alertContainer.innerHTML = `<div class="alert alert-${tipo}">${msg}</div>`;
-    setTimeout(() => { alertContainer.innerHTML = ''; }, 4500);
+    if (!alertas) return;
+    alertas.innerHTML = `<div class="alert alert-${tipo}">${msg}</div>`;
+    setTimeout(() => { alertas.innerHTML = ''; }, 4500);
   }
 
-  // Preenchimento de Seletores
   async function carregarSeletores() {
-    if (typeof api === 'undefined') return;
     const [pacientes, profissionais] = await Promise.all([api.getPacientes(), api.getProfissionais()]);
 
-    const campoPac = document.getElementById('campo-paciente');
-    if (campoPac) {
-      campoPac.innerHTML = '<option value="">Selecione um paciente</option>';
+    const campoPaciente = document.getElementById('campo-paciente');
+    if (campoPaciente) {
+      campoPaciente.innerHTML = '<option value="">Selecione um paciente</option>';
       pacientes.forEach(p => {
-        const nomePac = p.nome_completo || p.nome || 'Paciente sem nome';
-        campoPac.innerHTML += `<option value="${p.id_paciente || p.id}">${nomePac} (CPF: ${p.cpf})</option>`;
+        campoPaciente.innerHTML += `<option value="${p.id_paciente}">${p.nome_completo} (CPF: ${p.cpf})</option>`;
       });
     }
 
-    const campoProf = document.getElementById('campo-profissional');
-    const filtroProf = document.getElementById('filtro-profissional');
-    if (campoProf) campoProf.innerHTML = '<option value="">Selecione um profissional</option>';
-    if (filtroProf) filtroProf.innerHTML = '<option value="">Todos os profissionais</option>';
+    const campoProfissional = document.getElementById('campo-profissional');
+    const filtroProfissional = document.getElementById('filtro-profissional');
+    const reagendarPaciente = document.getElementById('reagendar-paciente');
+    const reagendarProfissional = document.getElementById('reagendar-profissional');
+
+    if (reagendarPaciente) {
+      reagendarPaciente.innerHTML = '<option value="">Selecione um paciente</option>';
+      pacientes.forEach(p => {
+        reagendarPaciente.innerHTML += `<option value="${p.id_paciente}">${p.nome_completo} (CPF: ${p.cpf})</option>`;
+      });
+    }
+
+    if (campoProfissional) campoProfissional.innerHTML = '<option value="">Selecione um profissional</option>';
+    if (filtroProfissional) filtroProfissional.innerHTML = '<option value="">Todos os profissionais</option>';
+    if (reagendarProfissional) reagendarProfissional.innerHTML = '<option value="">Selecione um profissional</option>';
 
     profissionais.forEach(p => {
-      const nomeProf = p.nome_completo || p.nome || 'Profissional';
-      const idProf = p.id_profissional || p.id;
-      if (campoProf) campoProf.innerHTML += `<option value="${idProf}">${nomeProf} - ${p.especialidade}</option>`;
-      if (filtroProf) filtroProf.innerHTML += `<option value="${idProf}">${nomeProf} (${p.especialidade})</option>`;
+      if (campoProfissional) campoProfissional.innerHTML += `<option value="${p.id_profissional}">${p.nome_completo} - ${p.especialidade}</option>`;
+      if (filtroProfissional) filtroProfissional.innerHTML += `<option value="${p.id_profissional}">${p.nome_completo} (${p.especialidade})</option>`;
+      if (reagendarProfissional) reagendarProfissional.innerHTML += `<option value="${p.id_profissional}">${p.nome_completo} - ${p.especialidade}</option>`;
     });
   }
 
-  // 1. Agenda Geral
   async function renderizarAgendaGeral() {
     const tbody = document.getElementById('agenda-body');
-    if (!tbody || typeof api === 'undefined') return;
+    if (!tbody) return;
 
     const [consultas, pacientes, profissionais] = await Promise.all([
       api.getConsultas(), 
@@ -114,53 +122,71 @@ document.addEventListener('DOMContentLoaded', async () => {
     ]);
     
     const filtroData = document.getElementById('filtro-data')?.value;
-    const filtroProf = document.getElementById('filtro-profissional')?.value;
+    const filtroProfissional = document.getElementById('filtro-profissional')?.value;
     const filtroStatus = document.getElementById('filtro-status')?.value;
+    const visualizacao = document.getElementById('visualizacao-agenda')?.value || 'dia';
+
+    let inicioSemana = '';
+    let fimSemana = '';
+    if (filtroData && visualizacao === 'semana') {
+      const referencia = new Date(`${filtroData}T12:00:00`);
+      const dia = referencia.getDay();
+      const deslocamento = dia === 0 ? -6 : 1 - dia;
+      const inicio = new Date(referencia);
+      inicio.setDate(referencia.getDate() + deslocamento);
+      const fim = new Date(inicio);
+      fim.setDate(inicio.getDate() + 6);
+      inicioSemana = inicio.toISOString().split('T')[0];
+      fimSemana = fim.toISOString().split('T')[0];
+    }
 
     const lista = consultas.filter(c => {
-      const idProfConsulta = String(c.id_profissional || c.profissionalId);
-      const matchData = filtroData ? c.data === filtroData : true;
-      const matchProf = filtroProf ? idProfConsulta === String(filtroProf) : true;
-      const matchStatus = filtroStatus ? c.status.toUpperCase() === filtroStatus.toUpperCase() : true;
-      return matchData && matchProf && matchStatus;
+      const mesmaData = !filtroData || (visualizacao === 'semana' ? c.data >= inicioSemana && c.data <= fimSemana : c.data === filtroData);
+      const mesmoProfissional = !filtroProfissional || String(c.id_profissional) === String(filtroProfissional);
+      const mesmoStatus = !filtroStatus || c.status === filtroStatus;
+      return mesmaData && mesmoProfissional && mesmoStatus;
     });
 
     tbody.innerHTML = '';
     if (lista.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 1.5rem; color: var(--text-muted);">Nenhum agendamento encontrado para os filtros selecionados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 1.5rem; color: var(--text-muted);">Nenhum agendamento encontrado para os filtros selecionados.</td></tr>';
       return;
     }
 
     lista.forEach(c => {
-      const idPac = Number(c.id_paciente || c.pacienteId);
-      const idProf = Number(c.id_profissional || c.profissionalId);
-      
-      const pac = pacientes.find(p => Number(p.id_paciente || p.id) === idPac) || { nome_completo: 'Paciente' };
-      const prof = profissionais.find(p => Number(p.id_profissional || p.id) === idProf) || { nome_completo: 'Profissional', especialidade: '-' };
-      
-      const statusFinal = (c.status || 'AGENDADA').toUpperCase();
-      const badgeClass = `badge-${statusFinal.toLowerCase()}`;
-      const idConsulta = c.id_consulta || c.id;
+      const paciente = pacientes.find(p => p.id_paciente === Number(c.id_paciente));
+      const profissional = profissionais.find(p => p.id_profissional === Number(c.id_profissional));
+      const status = c.status;
+      const classeStatus = `badge-${status.toLowerCase()}`;
 
       tbody.innerHTML += `
         <tr>
+          <td>${c.data}</td>
           <td><strong>${c.horaInicio} - ${c.horaFim}</strong></td>
-          <td>${pac.nome_completo || pac.nome}</td>
-          <td>${prof.nome_completo || prof.nome}</td>
-          <td>${prof.especialidade}</td>
-          <td><span class="badge ${badgeClass}">${statusFinal}</span></td>
+          <td>${paciente ? paciente.nome_completo : 'Paciente'}</td>
+          <td>${profissional ? profissional.nome_completo : 'Profissional'}</td>
+          <td>${profissional ? profissional.especialidade : '-'}</td>
+          <td><span class="badge ${classeStatus}">${status}</span></td>
           <td>
-            ${statusFinal === 'AGENDADA' ? `<button class="btn-danger-sm" onclick="abrirModalCancelamento(${idConsulta})">Cancelar</button>` : '-'}
+            <select onchange="alterarStatusConsulta(${c.id_consulta}, this.value)" style="margin-right:0.35rem; padding:0.3rem;">
+              <option value="">Alterar status</option>
+              <option value="AGENDADA">Agendada</option>
+              <option value="CONFIRMADA">Confirmada</option>
+              <option value="EM_ATENDIMENTO">Em atendimento</option>
+              <option value="REALIZADA">Concluída</option>
+              <option value="FALTOU">Faltou</option>
+            </select>
+            ${status === 'AGENDADA' ? `<button class="btn btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.8rem; margin-right:0.35rem;" onclick="abrirModalReagendamento(${c.id_consulta})">Reagendar</button>` : ''}
+            ${status !== 'CANCELADA' && status !== 'REALIZADA' ? `<button class="btn-danger-sm" onclick="abrirModalCancelamento(${c.id_consulta})">Cancelar</button>` : ''}
           </td>
         </tr>
       `;
     });
   }
 
-  // 2. Pacientes
   async function renderizarPacientes() {
     const tbody = document.getElementById('pacientes-body');
-    if (!tbody || typeof api === 'undefined') return;
+    if (!tbody) return;
     const pacientes = await api.getPacientes();
     const buscaInput = document.getElementById('busca-paciente');
     const termo = (buscaInput ? buscaInput.value : '').toLowerCase().trim();
@@ -181,29 +207,27 @@ document.addEventListener('DOMContentLoaded', async () => {
           <td>${p.telefone}</td>
           <td>${p.email_contato}</td>
           <td>${p.data_nascimento}</td>
-          <td><button class="btn-danger-sm" onclick="excluirPac(${p.id_paciente})">Excluir</button></td>
+          <td><button class="btn btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.8rem; margin-right:0.35rem;" onclick="editarPac(${p.id_paciente})">Editar</button><button class="btn-danger-sm" onclick="desativarPac(${p.id_paciente})">Desativar</button></td>
         </tr>
       `;
     });
   }
 
-  // 3. Profissionais
- // 3. Profissionais com Suporte Seguro a Qualquer Formato
   async function renderizarProfissionais() {
     const tbody = document.getElementById('profissionais-body');
-    if (!tbody || typeof api === 'undefined') return;
+    if (!tbody) return;
 
-    const profissionais = await api.getProfissionais() || [];
+    const profissionais = await api.getProfissionais();
     const buscaInput = document.getElementById('busca-profissional');
     const termo = (buscaInput ? buscaInput.value : '').toLowerCase().trim();
 
     tbody.innerHTML = '';
 
     const filtrados = profissionais.filter(p => {
-      const nome = (p.nome_completo || p.nome || '').toLowerCase();
-      const esp = (p.especialidade || '').toLowerCase();
-      const reg = (p.registro_profissional || '').toLowerCase();
-      return nome.includes(termo) || esp.includes(termo) || reg.includes(termo);
+      const nome = p.nome_completo.toLowerCase();
+      const especialidade = p.especialidade.toLowerCase();
+      const registro = p.registro_profissional.toLowerCase();
+      return nome.includes(termo) || especialidade.includes(termo) || registro.includes(termo);
     });
 
     if (filtrados.length === 0) {
@@ -212,31 +236,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     filtrados.forEach(p => {
-      const nome = p.nome_completo || p.nome || 'Sem nome';
-      const registro = p.registro_profissional || 'REG-PADRAO';
-      const idProf = p.id_profissional || p.id;
-
       tbody.innerHTML += `
         <tr>
-          <td><strong>${nome}</strong></td>
-          <td><code>${registro}</code></td>
+          <td><strong>${p.nome_completo}</strong></td>
+          <td><code>${p.registro_profissional}</code></td>
           <td><span class="badge badge-agendada">${p.especialidade || '-'}</span></td>
           <td>${p.telefone || '-'}</td>
-          <td>${p.email_contato || p.email || '-'}</td>
-          <td><button class="btn-danger-sm" onclick="excluirProf(${idProf})">Excluir</button></td>
+          <td>${p.email_contato || '-'}</td>
+          <td><button class="btn btn-secondary" style="padding:0.3rem 0.6rem; font-size:0.8rem; margin-right:0.35rem;" onclick="editarProf(${p.id_profissional})">Editar</button><button class="btn-danger-sm" onclick="desativarProf(${p.id_profissional})">Desativar</button></td>
         </tr>
       `;
     });
   }
 
-  // 4. Auditoria
   async function renderizarAuditoria() {
     const tbody = document.getElementById('auditoria-body');
-    if (!tbody || typeof api === 'undefined') return;
+    if (!tbody) return;
     const logs = await api.getAuditoriaLogs();
     tbody.innerHTML = '';
 
-    if (!logs || logs.length === 0) {
+    if (logs.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum registro de log.</td></tr>';
       return;
     }
@@ -254,14 +273,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // 5. Profissional
   async function renderizarVisaoProfissional() {
-    if (!usuarioLogado || usuarioLogado.perfil !== 'profissional' || typeof api === 'undefined') return;
+    if (!usuario || usuario.perfil !== 'profissional') return;
 
     const tbodyAgenda = document.getElementById('prof-consultas-body');
     if (tbodyAgenda) {
       const [consultas, pacientes] = await Promise.all([api.getConsultas(), api.getPacientes()]);
-      const minhas = consultas.filter(c => Number(c.id_profissional) === Number(usuarioLogado.id));
+      const minhas = consultas.filter(c => Number(c.id_profissional) === Number(usuario.id));
 
       tbodyAgenda.innerHTML = '';
       if (minhas.length === 0) {
@@ -295,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const tbodyFolgas = document.getElementById('prof-folgas-body');
     if (tbodyFolgas) {
-      const folgas = await api.getIndisponibilidades(usuarioLogado.id);
+      const folgas = await api.getIndisponibilidades(usuario.id);
       tbodyFolgas.innerHTML = '';
       if (folgas.length === 0) {
         tbodyFolgas.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nenhum dia de bloqueio cadastrado.</td></tr>';
@@ -313,14 +331,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 6. Paciente
   async function renderizarVisaoPaciente() {
-    if (!usuarioLogado || usuarioLogado.perfil !== 'paciente' || typeof api === 'undefined') return;
+    if (!usuario || usuario.perfil !== 'paciente') return;
 
     const tbody = document.getElementById('paciente-consultas-body');
     if (!tbody) return;
     const [consultas, profissionais] = await Promise.all([api.getConsultas(), api.getProfissionais()]);
-    const minhas = consultas.filter(c => Number(c.id_paciente) === Number(usuarioLogado.id));
+    const minhas = consultas.filter(c => Number(c.id_paciente) === Number(usuario.id));
 
     tbody.innerHTML = '';
     if (minhas.length === 0) {
@@ -351,68 +368,67 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Sessão
   function aplicarSessao() {
-    if (!usuarioLogado) {
-      if (viewLogin) viewLogin.classList.remove('hidden');
-      if (viewDashboard) viewDashboard.classList.add('hidden');
+    if (!usuario) {
+      if (telaLogin) telaLogin.classList.remove('hidden');
+      if (painel) painel.classList.add('hidden');
       return;
     }
 
-    if (viewLogin) viewLogin.classList.add('hidden');
-    if (viewDashboard) viewDashboard.classList.remove('hidden');
+    if (telaLogin) telaLogin.classList.add('hidden');
+    if (painel) painel.classList.remove('hidden');
 
-    if (perfilRecepcao) perfilRecepcao.classList.add('hidden');
-    if (perfilPaciente) perfilPaciente.classList.add('hidden');
-    if (perfilProfissional) perfilProfissional.classList.add('hidden');
-    if (navRecepcao) navRecepcao.classList.add('hidden');
-    if (navProfissional) navProfissional.classList.add('hidden');
+    if (areaRecepcao) areaRecepcao.classList.add('hidden');
+    if (areaPaciente) areaPaciente.classList.add('hidden');
+    if (areaProfissional) areaProfissional.classList.add('hidden');
+    if (menuRecepcao) menuRecepcao.classList.add('hidden');
+    if (menuProfissional) menuProfissional.classList.add('hidden');
 
-    if (usuarioLogado.perfil === 'recepcao') {
-      if (userDisplayLabel) userDisplayLabel.innerHTML = 'Perfil: <strong>Recepção / Administração</strong>';
-      if (perfilRecepcao) perfilRecepcao.classList.remove('hidden');
-      if (navRecepcao) navRecepcao.classList.remove('hidden');
+    if (usuario.perfil === 'recepcao') {
+      if (nomeUsuario) nomeUsuario.innerHTML = 'Perfil: <strong>Recepção / Administração</strong>';
+      if (areaRecepcao) areaRecepcao.classList.remove('hidden');
+      if (menuRecepcao) menuRecepcao.classList.remove('hidden');
+      carregarSeletores();
       renderizarAgendaGeral();
       renderizarPacientes();
       renderizarProfissionais();
       renderizarAuditoria();
-    } else if (usuarioLogado.perfil === 'profissional') {
-      if (userDisplayLabel) userDisplayLabel.innerHTML = `Profissional: <strong>${usuarioLogado.nome}</strong>`;
-      if (perfilProfissional) perfilProfissional.classList.remove('hidden');
-      if (navProfissional) navProfissional.classList.remove('hidden');
+    } else if (usuario.perfil === 'profissional') {
+      if (nomeUsuario) nomeUsuario.innerHTML = `Profissional: <strong>${usuario.nome}</strong>`;
+      if (areaProfissional) areaProfissional.classList.remove('hidden');
+      if (menuProfissional) menuProfissional.classList.remove('hidden');
       renderizarVisaoProfissional();
-    } else if (usuarioLogado.perfil === 'paciente') {
-      if (userDisplayLabel) userDisplayLabel.innerHTML = `Paciente: <strong>${usuarioLogado.nome}</strong>`;
-      if (perfilPaciente) perfilPaciente.classList.remove('hidden');
+    } else if (usuario.perfil === 'paciente') {
+      if (nomeUsuario) nomeUsuario.innerHTML = `Paciente: <strong>${usuario.nome}</strong>`;
+      if (areaPaciente) areaPaciente.classList.remove('hidden');
       renderizarVisaoPaciente();
     }
   }
 
-  // Abas do Login
-  const loginTabs = document.querySelectorAll('.login-tab-btn');
-  const inputTipo = document.getElementById('login-tipo-selecionado');
-  const labelUsuario = document.getElementById('label-login-usuario');
-  const inputUsuario = document.getElementById('login-usuario');
-  const loginAlert = document.getElementById('login-alert');
+  const abasLogin = document.querySelectorAll('.login-tab-btn');
+  const tipoLogin = document.getElementById('login-tipo-selecionado');
+  const textoUsuario = document.getElementById('label-login-usuario');
+  const campoUsuario = document.getElementById('login-usuario');
+  const erroLogin = document.getElementById('login-alert');
 
-  loginTabs.forEach(btn => {
+  abasLogin.forEach(btn => {
     btn.onclick = () => {
-      loginTabs.forEach(b => b.classList.remove('active'));
+      abasLogin.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const tipo = btn.dataset.type;
-      if (inputTipo) inputTipo.value = tipo;
-      if (loginAlert) loginAlert.classList.add('hidden');
+      if (tipoLogin) tipoLogin.value = tipo;
+      if (erroLogin) erroLogin.classList.add('hidden');
 
-      if (labelUsuario && inputUsuario) {
+      if (textoUsuario && campoUsuario) {
         if (tipo === 'recepcao') {
-          labelUsuario.textContent = 'E-mail ou Usuário *';
-          inputUsuario.placeholder = 'admin@saude.com';
+          textoUsuario.textContent = 'E-mail ou Usuário *';
+          campoUsuario.placeholder = 'admin@saude.com';
         } else if (tipo === 'profissional') {
-          labelUsuario.textContent = 'E-mail Profissional *';
-          inputUsuario.placeholder = 'dra.ana@saude.com';
+          textoUsuario.textContent = 'E-mail Profissional *';
+          campoUsuario.placeholder = 'dra.ana@saude.com';
         } else {
-          labelUsuario.textContent = 'CPF do Paciente *';
-          inputUsuario.placeholder = '111.222.333-44';
+          textoUsuario.textContent = 'CPF do Paciente *';
+          campoUsuario.placeholder = '111.222.333-44';
         }
       }
     };
@@ -422,36 +438,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (formLogin) {
     formLogin.onsubmit = async (e) => {
       e.preventDefault();
-      if (loginAlert) loginAlert.classList.add('hidden');
+      if (erroLogin) erroLogin.classList.add('hidden');
       try {
-        const tipo = inputTipo ? inputTipo.value : 'recepcao';
-        const usuario = inputUsuario ? inputUsuario.value.trim() : '';
+        const tipo = tipoLogin ? tipoLogin.value : 'recepcao';
+        const identificador = campoUsuario ? campoUsuario.value.trim() : '';
         const senha = document.getElementById('login-senha')?.value.trim() || '';
-        
-        usuarioLogado = await api.autenticar(tipo, usuario, senha);
-        sessionStorage.setItem('sessao_usuario', JSON.stringify(usuarioLogado));
+
+        usuario = await api.autenticar(tipo, identificador, senha);
+        sessionStorage.setItem('sessao_usuario', JSON.stringify(usuario));
         aplicarSessao();
       } catch (err) {
-        if (loginAlert) {
-          loginAlert.textContent = err.message;
-          loginAlert.classList.remove('hidden');
+        if (erroLogin) {
+          erroLogin.textContent = err.message;
+          erroLogin.classList.remove('hidden');
         }
       }
     };
   }
 
-  if (btnLogout) {
-    btnLogout.onclick = () => {
+  if (botaoSair) {
+    botaoSair.onclick = () => {
       sessionStorage.removeItem('sessao_usuario');
-      usuarioLogado = null;
+      usuario = null;
       aplicarSessao();
     };
   }
 
-  // Agendamento
-  const formAgend = document.getElementById('form-agendamento');
-  if (formAgend) {
-    formAgend.onsubmit = async (e) => {
+  const formAgendamento = document.getElementById('form-agendamento');
+  if (formAgendamento) {
+    formAgendamento.onsubmit = async (e) => {
       e.preventDefault();
       try {
         await api.agendarConsulta({
@@ -462,7 +477,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           horaFim: document.getElementById('campo-hora-fim').value
         });
         mostrarAlerta("Consulta agendada com sucesso! Log registrado.", "success");
-        formAgend.reset();
+        formAgendamento.reset();
         fecharModal('modal-agendamento');
         renderizarAgendaGeral();
         renderizarAuditoria();
@@ -472,7 +487,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // Cancelamento
+  window.abrirModalReagendamento = async (id) => {
+    try {
+      const consultas = await api.getConsultas();
+      const consulta = consultas.find(c => Number(c.id_consulta) === Number(id));
+      if (!consulta) {
+        mostrarAlerta('Consulta não encontrada.', 'error');
+        return;
+      }
+
+      document.getElementById('reagendar-consulta-id').value = consulta.id_consulta;
+      document.getElementById('reagendar-paciente').value = consulta.id_paciente;
+      document.getElementById('reagendar-profissional').value = consulta.id_profissional;
+      document.getElementById('reagendar-data').value = consulta.data;
+      document.getElementById('reagendar-hora-inicio').value = consulta.horaInicio;
+      document.getElementById('reagendar-hora-fim').value = consulta.horaFim;
+      abrirModal('modal-reagendamento');
+    } catch (err) {
+      mostrarAlerta(err.message, 'error');
+    }
+  };
+
+  const formReagendamento = document.getElementById('form-reagendamento');
+  if (formReagendamento) {
+    formReagendamento.onsubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const id = document.getElementById('reagendar-consulta-id').value;
+        await api.reagendarConsulta(id, {
+          id_paciente: document.getElementById('reagendar-paciente').value,
+          id_profissional: document.getElementById('reagendar-profissional').value,
+          data: document.getElementById('reagendar-data').value,
+          horaInicio: document.getElementById('reagendar-hora-inicio').value,
+          horaFim: document.getElementById('reagendar-hora-fim').value
+        });
+        mostrarAlerta('Consulta reagendada com sucesso!', 'success');
+        fecharModal('modal-reagendamento');
+        await renderizarAgendaGeral();
+        await renderizarAuditoria();
+      } catch (err) {
+        mostrarAlerta(err.message, 'error');
+      }
+    };
+  }
+
   window.abrirModalCancelamento = (id) => {
     const elId = document.getElementById('cancelar-consulta-id');
     const elMotivo = document.getElementById('cancelar-motivo');
@@ -481,9 +539,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     abrirModal('modal-cancelamento');
   };
 
-  const formCanc = document.getElementById('form-cancelamento');
-  if (formCanc) {
-    formCanc.onsubmit = async (e) => {
+  const formCancelamento = document.getElementById('form-cancelamento');
+  if (formCancelamento) {
+    formCancelamento.onsubmit = async (e) => {
       e.preventDefault();
       const id = document.getElementById('cancelar-consulta-id')?.value;
       const motivo = document.getElementById('cancelar-motivo')?.value;
@@ -495,7 +553,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // Atendimento / Prontuário
   window.iniciarAtendimento = (consultaId, pacienteNome) => {
     const elId = document.getElementById('atendimento-consulta-id');
     const elNome = document.getElementById('atendimento-paciente-nome');
@@ -508,9 +565,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     abrirModal('modal-atendimento');
   };
 
-  const formAtend = document.getElementById('form-atendimento');
-  if (formAtend) {
-    formAtend.onsubmit = async (e) => {
+  const formAtendimento = document.getElementById('form-atendimento');
+  if (formAtendimento) {
+    formAtendimento.onsubmit = async (e) => {
       e.preventDefault();
       const id = document.getElementById('atendimento-consulta-id')?.value;
       const anotacoes = document.getElementById('atendimento-anotacoes')?.value;
@@ -527,62 +584,108 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // Formulários de Cadastros
-  const formPac = document.getElementById('form-paciente');
-  if (formPac) {
-    formPac.onsubmit = async (e) => {
+  window.editarPac = async (id) => {
+    try {
+      const pacientes = await api.getPacientes();
+      const paciente = pacientes.find(p => Number(p.id_paciente) === Number(id));
+      if (!paciente) return mostrarAlerta('Paciente não encontrado.', 'error');
+
+      document.getElementById('pac-id').value = paciente.id_paciente;
+      document.getElementById('pac-nome').value = paciente.nome_completo || '';
+      document.getElementById('pac-cpf').value = paciente.cpf || '';
+      document.getElementById('pac-nasc').value = String(paciente.data_nascimento || '').slice(0, 10);
+      document.getElementById('pac-tel').value = paciente.telefone || '';
+      document.getElementById('pac-email').value = paciente.email_contato || '';
+      document.getElementById('titulo-modal-paciente').textContent = 'Editar Paciente';
+      document.getElementById('btn-salvar-paciente').textContent = 'Salvar Alterações';
+      abrirModal('modal-paciente');
+    } catch (err) {
+      mostrarAlerta(err.message, 'error');
+    }
+  };
+
+  const formPaciente = document.getElementById('form-paciente');
+  if (formPaciente) {
+    formPaciente.onsubmit = async (e) => {
       e.preventDefault();
       try {
-        await api.criarPaciente({
+        const id = document.getElementById('pac-id').value;
+        const dados = {
           nome_completo: document.getElementById('pac-nome').value,
           cpf: document.getElementById('pac-cpf').value,
           data_nascimento: document.getElementById('pac-nasc').value,
           telefone: document.getElementById('pac-tel').value,
           email_contato: document.getElementById('pac-email').value
-        });
-        mostrarAlerta("Paciente cadastrado com sucesso!", "success");
-        formPac.reset();
+        };
+
+        if (id) {
+          await api.atualizarPaciente(id, dados);
+          mostrarAlerta('Paciente atualizado com sucesso!', 'success');
+        } else {
+          await api.criarPaciente(dados);
+          mostrarAlerta('Paciente cadastrado com sucesso!', 'success');
+        }
+
+        formPaciente.reset();
+        document.getElementById('pac-id').value = '';
         fecharModal('modal-paciente');
         await carregarSeletores();
-        renderizarPacientes();
+        await renderizarPacientes();
       } catch (err) {
-        mostrarAlerta(err.message, "error");
+        mostrarAlerta(err.message, 'error');
       }
     };
   }
 
-// Cadastro de Profissional (Médico) Defensivo
-  const formProf = document.getElementById('form-profissional');
-  if (formProf) {
-    formProf.onsubmit = async (e) => {
+  window.editarProf = async (id) => {
+    try {
+      const profissionais = await api.getProfissionais();
+      const profissional = profissionais.find(p => Number(p.id_profissional) === Number(id));
+      if (!profissional) return mostrarAlerta('Profissional não encontrado.', 'error');
+
+      document.getElementById('prof-id').value = profissional.id_profissional;
+      document.getElementById('prof-nome').value = profissional.nome_completo || '';
+      document.getElementById('prof-registro').value = profissional.registro_profissional || '';
+      document.getElementById('prof-esp').value = profissional.especialidade || '';
+      document.getElementById('prof-tel').value = profissional.telefone || '';
+      document.getElementById('prof-email').value = profissional.email_contato || '';
+      document.getElementById('titulo-modal-profissional').textContent = 'Editar Profissional de Saúde';
+      document.getElementById('btn-salvar-profissional').textContent = 'Salvar Alterações';
+      abrirModal('modal-profissional');
+    } catch (err) {
+      mostrarAlerta(err.message, 'error');
+    }
+  };
+
+  const formProfissional = document.getElementById('form-profissional');
+  if (formProfissional) {
+    formProfissional.onsubmit = async (e) => {
       e.preventDefault();
       try {
-        const nome = document.getElementById('prof-nome')?.value.trim();
-        const registro = document.getElementById('prof-registro')?.value.trim() || ("REG-" + Date.now().toString().slice(-5));
-        const especialidade = document.getElementById('prof-esp')?.value.trim();
-        const telefone = document.getElementById('prof-tel')?.value.trim();
-        const email = document.getElementById('prof-email')?.value.trim();
+        const id = document.getElementById('prof-id').value;
+        const dados = {
+          nome_completo: document.getElementById('prof-nome').value.trim(),
+          registro_profissional: document.getElementById('prof-registro').value.trim(),
+          especialidade: document.getElementById('prof-esp').value.trim(),
+          telefone: document.getElementById('prof-tel').value.trim(),
+          email_contato: document.getElementById('prof-email').value.trim()
+        };
 
-        if (!nome || !especialidade) {
-          mostrarAlerta("Preencha o nome e a especialidade do profissional.");
-          return;
+        if (id) {
+          await api.atualizarProfissional(id, dados);
+          mostrarAlerta('Profissional atualizado com sucesso!', 'success');
+        } else {
+          await api.criarProfissional(dados);
+          mostrarAlerta('Profissional cadastrado com sucesso!', 'success');
         }
 
-        await api.criarProfissional({
-          nome_completo: nome,
-          registro_profissional: registro,
-          especialidade: especialidade,
-          telefone: telefone,
-          email_contato: email
-        });
-
-        mostrarAlerta("Profissional cadastrado com sucesso!", "success");
-        formProf.reset();
+        formProfissional.reset();
+        document.getElementById('prof-id').value = '';
         fecharModal('modal-profissional');
         await carregarSeletores();
         await renderizarProfissionais();
       } catch (err) {
-        mostrarAlerta(err.message, "error");
+        mostrarAlerta(err.message, 'error');
       }
     };
   }
@@ -592,7 +695,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     formFolga.onsubmit = async (e) => {
       e.preventDefault();
       await api.criarIndisponibilidade({
-        id_profissional: usuarioLogado.id,
+        id_profissional: usuario.id,
         data: document.getElementById('folga-data').value,
         motivo: document.getElementById('folga-motivo').value
       });
@@ -603,15 +706,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // Operações Globais de Exclusão
   window.removerFolga = async (id) => {
     await api.excluirIndisponibilidade(id);
     renderizarVisaoProfissional();
   };
-  window.excluirPac = async (id) => {
-    if (confirm("Deseja realmente excluir este paciente?")) {
+  window.desativarPac = async (id) => {
+    if (confirm("Deseja realmente desativar este paciente?")) {
       try {
-        await api.excluirPaciente(id);
+        await api.desativarPaciente(id);
         await carregarSeletores();
         renderizarPacientes();
       } catch (err) {
@@ -619,32 +721,45 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   };
-  window.excluirProf = async (id) => {
-    if (confirm("Deseja realmente excluir este profissional?")) {
-      await api.excluirProfissional(id);
+  window.desativarProf = async (id) => {
+    if (confirm("Deseja realmente desativar este profissional?")) {
+      await api.desativarProfissional(id);
       await carregarSeletores();
       renderizarProfissionais();
     }
   };
 
-  // Filtros
-  const fData = document.getElementById('filtro-data');
-  const fProf = document.getElementById('filtro-profissional');
-  const fStatus = document.getElementById('filtro-status');
-  const bPac = document.getElementById('busca-paciente');
-  const bProf = document.getElementById('busca-profissional');
 
-  if (fData) fData.onchange = renderizarAgendaGeral;
-  if (fProf) fProf.onchange = renderizarAgendaGeral;
-  if (fStatus) fStatus.onchange = renderizarAgendaGeral;
-  if (bPac) bPac.oninput = renderizarPacientes;
-  if (bProf) bProf.oninput = renderizarProfissionais;
+  window.alterarStatusConsulta = async (id, status) => {
+    if (!status) return;
+    try {
+      await api.atualizarStatusConsulta(id, status);
+      mostrarAlerta('Status da consulta atualizado.', 'success');
+      renderizarAgendaGeral();
+    } catch (err) {
+      mostrarAlerta(err.message, 'error');
+      renderizarAgendaGeral();
+    }
+  };
+
+  const filtroData = document.getElementById('filtro-data');
+  const filtroProf = document.getElementById('filtro-profissional');
+  const filtroStatus = document.getElementById('filtro-status');
+  const visualizacaoAgenda = document.getElementById('visualizacao-agenda');
+  const buscaPaciente = document.getElementById('busca-paciente');
+  const buscaProfissional = document.getElementById('busca-profissional');
+
+  if (filtroData) filtroData.onchange = renderizarAgendaGeral;
+  if (filtroProf) filtroProf.onchange = renderizarAgendaGeral;
+  if (filtroStatus) filtroStatus.onchange = renderizarAgendaGeral;
+  if (visualizacaoAgenda) visualizacaoAgenda.onchange = renderizarAgendaGeral;
+  if (buscaPaciente) buscaPaciente.oninput = renderizarPacientes;
+  if (buscaProfissional) buscaProfissional.oninput = renderizarProfissionais;
 
   const hoje = new Date().toISOString().split('T')[0];
-  if (fData) fData.value = hoje;
-  const cData = document.getElementById('campo-data');
-  if (cData) cData.value = hoje;
+  if (filtroData) filtroData.value = hoje;
+  const campoData = document.getElementById('campo-data');
+  if (campoData) campoData.value = hoje;
 
-  await carregarSeletores();
   aplicarSessao();
 });
